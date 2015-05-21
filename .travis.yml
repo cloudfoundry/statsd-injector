@@ -26,6 +26,7 @@ before_install:
 - popd
 - cd $GOPATH/src/github.com/cloudfoundry/statsd-injector
 - go get -u github.com/golang/lint/golint
+- go install -v github.com/onsi/ginkgo/ginkgo
 - export GOPATH=$GOPATH:$HOME/loggregator
 
 install:
