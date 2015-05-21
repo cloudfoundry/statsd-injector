@@ -25,8 +25,10 @@ before_install:
 - mv bin/etcd $BINDIR
 - popd
 - cd $GOPATH/src/github.com/cloudfoundry/statsd-injector
-- go get -d -v -t ./...
 - go get -u github.com/golang/lint/golint
 - export GOPATH=$GOPATH:$HOME/loggregator
+
+install:
+- go get -d -v -t ./...
 
 script: PATH=$HOME/gopath/bin:$PATH bin/test
