@@ -32,7 +32,7 @@ before_install:
 - go get -v github.com/onsi/ginkgo
 - go get -v github.com/onsi/gomega
 - go install -v github.com/onsi/ginkgo/ginkgo
-- export GOPATH=$GOPATH:$HOME/loggregator
+- export GOPATH=$HOME/loggregator:$GOPATH
 
 install:
 - go get -d -v -t ./...
