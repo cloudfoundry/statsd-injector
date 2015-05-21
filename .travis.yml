@@ -15,6 +15,9 @@ matrix:
 before_install:
 - cd $HOME
 - git clone https://github.com/cloudfoundry/loggregator.git
+- pushd loggregator
+- git submodule init
+- popd
 - export GOPATH=$HOME/gopath
 - export BINDIR=$GOPATH/bin
 - mkdir -p $BINDIR
