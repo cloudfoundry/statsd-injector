@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/cloudfoundry/dropsonde/events"
 	"github.com/cloudfoundry/gosteno"
-	"github.com/coreos/etcd/third_party/code.google.com/p/goprotobuf/proto"
+	"github.com/gogo/protobuf/proto"
 	"net"
 )
 

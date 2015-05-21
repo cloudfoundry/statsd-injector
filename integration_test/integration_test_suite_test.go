@@ -12,9 +12,13 @@ import (
 
 	"testing"
 
+	"fmt"
 	"github.com/onsi/ginkgo/config"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"os"
+	"path"
+	"path/filepath"
 )
 
 func TestIntegrationTest(t *testing.T) {
@@ -31,10 +35,13 @@ var localIPAddress string
 var pathToGoStatsdClient string
 
 var _ = BeforeSuite(func() {
-	pathToMetronExecutable, err := gexec.Build("github.com/cloudfoundry/loggregator/src/metron")
+	loggregatorPath, err := getGoPathForPackage("metron")
+	Expect(err).ToNot(HaveOccurred(), "loggregator not found. Do you have loggregator in your GOPATH?")
+
+	pathToMetronExecutable, err := gexec.BuildIn(loggregatorPath, "metron")
 	Expect(err).ShouldNot(HaveOccurred())
 
-	pathToGoStatsdClient, err = gexec.Build("tools/statsdGoClient")
+	pathToGoStatsdClient, err = gexec.Build("github.com/cloudfoundry/statsd-injector/tools/statsdGoClient")
 	Expect(err).NotTo(HaveOccurred())
 
 	command := exec.Command(pathToMetronExecutable, "--config=fixtures/metron.json", "--debug")
@@ -72,3 +79,15 @@ var _ = AfterSuite(func() {
 	etcdRunner.Adapter().Disconnect()
 	etcdRunner.Stop()
 })
+
+func getGoPathForPackage(packageName string) (string, error) {
+	gopaths := os.Getenv("GOPATH")
+	for _, gopath := range filepath.SplitList(gopaths) {
+		absolutePath := path.Join(gopath, "src", packageName)
+		if _, err := os.Stat(absolutePath); err == nil {
+			return gopath, nil
+		}
+	}
+
+	return "", fmt.Errorf("package %s not found", packageName)
+}
