@@ -1,0 +1,8 @@
+set -e -x
+
+export GOROOT=$(readlink -nf /var/vcap/packages/golang1.4)
+export PATH=$GOROOT/bin:$PATH
+export GOPATH=$PWD/statsd_injector
+
+go install github.com/cloudfoundry/statsd-injector
+cp -a $PWD/statsd_injector/bin/statsd-injector ${BOSH_INSTALL_TARGET}
