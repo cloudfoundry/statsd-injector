@@ -16,7 +16,7 @@ before_install:
 - cd $HOME
 - git clone https://github.com/cloudfoundry/loggregator.git
 - pushd loggregator
-- git submodule init
+- git submodule update --init --recursive
 - popd
 - export GOPATH=$HOME/gopath
 - export BINDIR=$GOPATH/bin
