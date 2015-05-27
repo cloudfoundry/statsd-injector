@@ -9,5 +9,4 @@ files:
 - statsd_injector/src/github.com/cloudfoundry/dropsonde/events/*.go # gosub
 - statsd_injector/src/github.com/cloudfoundry/gosteno/*.go # gosub
 - statsd_injector/src/github.com/cloudfoundry/gosteno/syslog/*.go # gosub
-- statsd_injector/src/github.com/coreos/etcd/third_party/code.google.com/p/goprotobuf/proto/*.go # gosub
 - statsd_injector/src/github.com/gogo/protobuf/proto/*.go # gosub
