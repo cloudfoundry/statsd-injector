@@ -1,7 +1,15 @@
 {
 	"ImportPath": "github.com/cloudfoundry/statsd-injector",
 	"GoVersion": "go1.4.2",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/cactus/go-statsd-client/statsd",
+			"Comment": "v2.0.0-30-gdc93b85",
+			"Rev": "dc93b8587d799a204e96175505fff9678a8ec3e1"
+		},
 		{
 			"ImportPath": "github.com/cloudfoundry/dropsonde/events",
 			"Rev": "a8a2423ff3f1bebc4b94d22f7edc8d26d144f75b"
@@ -12,8 +20,55 @@
 			"Rev": "5c1406e9ea0ab919f92e1b194169565def41147b"
 		},
 		{
+			"ImportPath": "github.com/cloudfoundry/gunk/workpool",
+			"Rev": "3903d4fe1fa901df52fe441794e8313ea14d5b68"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/loggregatorlib/cfcomponent/instrumentation",
+			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/loggregatorlib/loggertesthelper",
+			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/loggregatorlib/logmessage",
+			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/loggregatorlib/signature",
+			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/storeadapter",
+			"Rev": "dff7a18fad3c03aae624a5ae0bce53d142d72971"
+		},
+		{
+			"ImportPath": "github.com/coreos/go-etcd/etcd",
+			"Comment": "v0.4.6",
+			"Rev": "6aa2da5a7a905609c93036b9307185a04a5a84a5"
+		},
+		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
 			"Rev": "b9e369e8ffb6773efc654ea13594566404314ee1"
+		},
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.1.0-24-g7891f86",
+			"Rev": "7891f8646dc62f4e32642ba332bbe7cf0097d8c5"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.0-32-g390fb09",
+			"Rev": "390fb096e741161a53a49a0fc4cee1dab95d09dc"
+		},
+		{
+			"ImportPath": "github.com/pivotal-golang/localip",
+			"Rev": "ca5f12419a47fe0c8547eea32f9498eb6e9fe817"
 		}
 	]
 }
