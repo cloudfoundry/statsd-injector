@@ -11,42 +11,42 @@
 			"Rev": "dc93b8587d799a204e96175505fff9678a8ec3e1"
 		},
 		{
-			"ImportPath": "github.com/cloudfoundry/dropsonde/events",
-			"Rev": "a8a2423ff3f1bebc4b94d22f7edc8d26d144f75b"
-		},
-		{
 			"ImportPath": "github.com/cloudfoundry/gosteno",
 			"Comment": "scotty_09012012-41-g5c1406e",
 			"Rev": "5c1406e9ea0ab919f92e1b194169565def41147b"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/gunk/workpool",
-			"Rev": "3903d4fe1fa901df52fe441794e8313ea14d5b68"
+			"Rev": "1e83496bd55b10dde3ac60f22ab5058eaa4042e0"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/loggregatorlib/cfcomponent/instrumentation",
-			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+			"Rev": "adb9ee61b83385f0dd086686252bf39ff9be77eb"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/loggregatorlib/loggertesthelper",
-			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+			"Rev": "adb9ee61b83385f0dd086686252bf39ff9be77eb"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/loggregatorlib/logmessage",
-			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+			"Rev": "adb9ee61b83385f0dd086686252bf39ff9be77eb"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/loggregatorlib/signature",
-			"Rev": "befb83d03a1a78089321fd92d194a57dc7fc674a"
+			"Rev": "adb9ee61b83385f0dd086686252bf39ff9be77eb"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/sonde-go/events",
+			"Rev": "06a12a31436a1d91d00fad354682a38cc0503636"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/storeadapter",
-			"Rev": "dff7a18fad3c03aae624a5ae0bce53d142d72971"
+			"Rev": "776fd8b514e4c7ae50db872e14dc0995ae3721ca"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-etcd/etcd",
-			"Comment": "v0.4.6",
-			"Rev": "6aa2da5a7a905609c93036b9307185a04a5a84a5"
+			"Comment": "v2.0.0-5-g54b5d67",
+			"Rev": "54b5d671009c9e841338a6b41ee9330225c57ff3"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
@@ -58,17 +58,25 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
-			"Comment": "v1.1.0-24-g7891f86",
-			"Rev": "7891f8646dc62f4e32642ba332bbe7cf0097d8c5"
+			"Comment": "v1.1.0-29-g18c73cf",
+			"Rev": "18c73cfeca1095f984c036a04c42ac0b08048685"
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Comment": "v1.0-32-g390fb09",
-			"Rev": "390fb096e741161a53a49a0fc4cee1dab95d09dc"
+			"Comment": "v1.0-23-g2cd6d99",
+			"Rev": "2cd6d99ccf3ac7ae8398d8296429161bf7061ae2"
+		},
+		{
+			"ImportPath": "github.com/pivotal-golang/clock",
+			"Rev": "5a6429d4274a895e93d3db8bb6addcba4c9a84eb"
 		},
 		{
 			"ImportPath": "github.com/pivotal-golang/localip",
 			"Rev": "ca5f12419a47fe0c8547eea32f9498eb6e9fe817"
+		},
+		{
+			"ImportPath": "github.com/tedsuo/ifrit",
+			"Rev": "4d62400529d15177ea24ec270bca3735629e4fd5"
 		}
 	]
 }
