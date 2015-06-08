@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cloudfoundry/dropsonde/events"
 	"github.com/cloudfoundry/gosteno"
+	"github.com/cloudfoundry/sonde-go/events"
 	"github.com/gogo/protobuf/proto"
 )
 

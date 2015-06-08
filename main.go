@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"github.com/cloudfoundry/dropsonde/events"
 	"github.com/cloudfoundry/gosteno"
+	"github.com/cloudfoundry/sonde-go/events"
 	"github.com/cloudfoundry/statsd-injector/statsdemitter"
 	"github.com/cloudfoundry/statsd-injector/statsdlistener"
 	"os"

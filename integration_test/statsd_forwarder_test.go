@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/cloudfoundry/dropsonde/events"
+	"github.com/cloudfoundry/sonde-go/events"
 	"github.com/cloudfoundry/storeadapter"
 	"github.com/gogo/protobuf/proto"
 

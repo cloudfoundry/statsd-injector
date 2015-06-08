@@ -1,8 +1,8 @@
 package statsdemitter_test
 
 import (
-	"github.com/cloudfoundry/dropsonde/events"
 	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
+	"github.com/cloudfoundry/sonde-go/events"
 	"github.com/cloudfoundry/statsd-injector/statsdemitter"
 	"github.com/gogo/protobuf/proto"
 	. "github.com/onsi/ginkgo"
