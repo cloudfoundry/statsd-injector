@@ -14,9 +14,11 @@ pid_guard $PIDFILE "Statsd Injector"
 mkdir -p $RUN_DIR
 mkdir -p $LOG_DIR
 
+chown -R vcap:vcap $LOG_DIR
+
 echo $$ > $PIDFILE
 
-exec /var/vcap/packages/statsd-injector/bin/statsd-injector \
+exec chpst -u vcap:vcap /var/vcap/packages/statsd-injector/bin/statsd-injector \
     -statsdPort=<%= p("statsd_injector.statsd_port") %> \
     -metronPort=<%= p("statsd_injector.metron_port") %> \
     -logLevel=<%= p("statsd_injector.log_level") %> \
