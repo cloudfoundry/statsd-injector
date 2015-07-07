@@ -17,6 +17,18 @@ import (
 
 var _ = Describe("Statsd support", func() {
 	var fakeDoppler net.PacketConn
+	var getValueMetric = func() *events.ValueMetric {
+		readBuffer := make([]byte, 65535)
+		readCount, _, _ := fakeDoppler.ReadFrom(readBuffer)
+		readData := make([]byte, readCount)
+		copy(readData, readBuffer[:readCount])
+		Expect(len(readData)).To(BeNumerically(">", 32), "Failed to read enough data to be a message")
+		readData = readData[32:]
+
+		var receivedEnvelope events.Envelope
+		Expect(proto.Unmarshal(readData, &receivedEnvelope)).To(Succeed())
+		return receivedEnvelope.ValueMetric
+	}
 
 	BeforeEach(func() {
 		fakeDoppler = eventuallyListensForUDP("localhost:3457")
@@ -46,8 +58,11 @@ var _ = Describe("Statsd support", func() {
 			_, err = connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.gauge", 23, "gauge"), "fake-origin")
-			checkValueMetric(fakeDoppler, basicValueMetric("sampled.gauge", 115, "gauge"), "fake-origin")
+			expected := basicValueMetric("test.gauge", 23, "gauge")
+			Eventually(getValueMetric).Should(Equal(expected))
+
+			expected = basicValueMetric("sampled.gauge", 115, "gauge")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			close(done)
 		}, 5)
@@ -61,7 +76,8 @@ var _ = Describe("Statsd support", func() {
 			_, err = connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.timing", 23.5, "ms"), "fake-origin")
+			expected := basicValueMetric("test.timing", 23.5, "ms")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			close(done)
 		}, 5)
@@ -75,7 +91,8 @@ var _ = Describe("Statsd support", func() {
 			_, err = connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.counter", 42, "counter"), "fake-origin")
+			expected := basicValueMetric("test.counter", 42, "counter")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			close(done)
 		}, 5)
@@ -94,22 +111,26 @@ var _ = Describe("Statsd support", func() {
 			clientInput.Write([]byte("gauge test.gauge 23\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.gauge", 23, "gauge"), "testNamespace")
+			expected := basicValueMetric("test.gauge", 23, "gauge")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Write([]byte("gaugedelta test.gauge 7\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.gauge", 30, "gauge"), "testNamespace")
+			expected = basicValueMetric("test.gauge", 30, "gauge")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Write([]byte("gaugedelta test.gauge -5\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.gauge", 25, "gauge"), "testNamespace")
+			expected = basicValueMetric("test.gauge", 25, "gauge")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Write([]byte("gauge test.gauge 50\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.gauge", 50, "gauge"), "testNamespace")
+			expected = basicValueMetric("test.gauge", 50, "gauge")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Close()
 			clientSession.Kill().Wait()
@@ -128,7 +149,8 @@ var _ = Describe("Statsd support", func() {
 			clientInput.Write([]byte("timing test.timing 23\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.timing", 23, "ms"), "testNamespace")
+			expected := basicValueMetric("test.timing", 23, "ms")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Close()
 			clientSession.Kill().Wait()
@@ -147,17 +169,20 @@ var _ = Describe("Statsd support", func() {
 			clientInput.Write([]byte("count test.counter 27\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.counter", 27, "counter"), "testNamespace")
+			expected := basicValueMetric("test.counter", 27, "counter")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Write([]byte("count test.counter +3\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.counter", 30, "counter"), "testNamespace")
+			expected = basicValueMetric("test.counter", 30, "counter")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Write([]byte("count test.counter -10\n"))
 			Eventually(statsdInjectorSession).Should(gbytes.Say("StatsdListener: Read "))
 
-			checkValueMetric(fakeDoppler, basicValueMetric("test.counter", 20, "counter"), "testNamespace")
+			expected = basicValueMetric("test.counter", 20, "counter")
+			Eventually(getValueMetric).Should(Equal(expected))
 
 			clientInput.Close()
 			clientSession.Kill().Wait()
@@ -165,19 +190,3 @@ var _ = Describe("Statsd support", func() {
 		}, 5)
 	})
 })
-
-func checkValueMetric(fakeDoppler net.PacketConn, valueMetric *events.ValueMetric, origin string) {
-	readBuffer := make([]byte, 65535)
-	readCount, _, _ := fakeDoppler.ReadFrom(readBuffer)
-	readData := make([]byte, readCount)
-	copy(readData, readBuffer[:readCount])
-	Expect(len(readData)).To(BeNumerically(">", 32), "Failed to read enough data to be a message")
-	readData = readData[32:]
-
-	var receivedEnvelope events.Envelope
-	Expect(proto.Unmarshal(readData, &receivedEnvelope)).To(Succeed())
-	Expect(receivedEnvelope.GetEventType()).To(Equal(events.Envelope_ValueMetric))
-
-	Expect(receivedEnvelope.GetValueMetric()).To(Equal(valueMetric))
-	Expect(receivedEnvelope.GetOrigin()).To(Equal(origin))
-}
