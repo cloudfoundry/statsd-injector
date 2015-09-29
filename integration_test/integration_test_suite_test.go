@@ -1,7 +1,6 @@
 package integration_test
 
 import (
-	"net/http"
 	"os/exec"
 
 	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
@@ -57,12 +56,6 @@ var _ = BeforeSuite(func() {
 	Expect(err).ShouldNot(HaveOccurred())
 
 	localIPAddress, _ = localip.LocalIP()
-
-	// wait for server to be up
-	Eventually(func() error {
-		_, err := http.Get("http://" + localIPAddress + ":1234")
-		return err
-	}, 3).ShouldNot(HaveOccurred())
 
 	etcdPort = 5800 + (config.GinkgoConfig.ParallelNode-1)*10
 	etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1)
