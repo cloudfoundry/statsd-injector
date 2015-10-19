@@ -20,10 +20,6 @@
 			"Rev": "1e83496bd55b10dde3ac60f22ab5058eaa4042e0"
 		},
 		{
-			"ImportPath": "github.com/cloudfoundry/loggregatorlib/cfcomponent/instrumentation",
-			"Rev": "adb9ee61b83385f0dd086686252bf39ff9be77eb"
-		},
-		{
 			"ImportPath": "github.com/cloudfoundry/loggregatorlib/loggertesthelper",
 			"Rev": "adb9ee61b83385f0dd086686252bf39ff9be77eb"
 		},
