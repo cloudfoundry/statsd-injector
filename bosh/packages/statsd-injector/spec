@@ -4,4 +4,3 @@ dependencies:
     - golang1.4
 files:
 - statsd-injector/**/*.go
-- statsd-injector/LICENSE
