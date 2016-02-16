@@ -33,7 +33,7 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/sonde-go/events",
-			"Rev": "06a12a31436a1d91d00fad354682a38cc0503636"
+			"Rev": "ae27095c3a1b9977a0ef1928b0147d5689f2e921"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/storeadapter",
@@ -46,7 +46,8 @@
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
-			"Rev": "b9e369e8ffb6773efc654ea13594566404314ee1"
+			"Comment": "v0.1-125-g82d16f7",
+			"Rev": "82d16f734d6d871204a3feb1a73cb220cc92574c"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
