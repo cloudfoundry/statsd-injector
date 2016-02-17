@@ -1,3 +1,4 @@
+# DEPRECATED (moved into [cloudfoundry/loggregator](https://github.com/cloudfoundry/loggregator/))
 # statsd-injector
 Companion component to Metron that receives Statsd and emits Dropsonde to Metron
 
