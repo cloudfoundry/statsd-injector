@@ -1,7 +1,0 @@
-#!/bin/bash
-set -e
-
-ginkgo -r -cover statsdemitter statsdlistener
-ginkgo -r integration_test
-go vet ./...
-go fmt ./...

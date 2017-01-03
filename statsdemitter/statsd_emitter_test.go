@@ -1,13 +1,14 @@
 package statsdemitter_test
 
 import (
-	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
-	"github.com/cloudfoundry/sonde-go/events"
-	"github.com/cloudfoundry/statsd-injector/statsdemitter"
-	"github.com/gogo/protobuf/proto"
+	"net"
+	"statsd-injector/statsdemitter"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"net"
+
+	"github.com/cloudfoundry/sonde-go/events"
+	"github.com/gogo/protobuf/proto"
 )
 
 var _ = Describe("Statsdemitter", func() {
@@ -16,9 +17,8 @@ var _ = Describe("Statsdemitter", func() {
 	)
 
 	var _ = BeforeEach(func() {
-		udpAddr, _ := net.ResolveUDPAddr("udp", "localhost:8088")
+		udpAddr, _ := net.ResolveUDPAddr("udp", ":8088")
 		udpListener, _ = net.ListenUDP("udp", udpAddr)
-		loggertesthelper.TestLoggerSink.Clear()
 	})
 
 	var _ = AfterEach(func() {
@@ -28,7 +28,7 @@ var _ = Describe("Statsdemitter", func() {
 	It("emits the serialized envelope on the given UDP port", func(done Done) {
 		defer close(done)
 		inputChan := make(chan *events.Envelope)
-		emitter := statsdemitter.New(8088, loggertesthelper.Logger())
+		emitter := statsdemitter.New(8088)
 		go emitter.Run(inputChan)
 		message := &events.Envelope{
 			Origin:    proto.String("origin"),
@@ -44,18 +44,20 @@ var _ = Describe("Statsdemitter", func() {
 		inputChan <- message
 
 		buffer := make([]byte, 4096)
-		readCount, _, _ := udpListener.ReadFromUDP(buffer)
+		readCount, _, err := udpListener.ReadFromUDP(buffer)
+		Expect(err).ToNot(HaveOccurred())
 
 		received := buffer[:readCount]
 
-		expectedBytes, _ := proto.Marshal(message)
+		expectedBytes, err := proto.Marshal(message)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(received).To(Equal(expectedBytes))
 	})
 
 	It("does not emit invalid envelope", func(done Done) {
 		defer close(done)
 		inputChan := make(chan *events.Envelope)
-		emitter := statsdemitter.New(8088, loggertesthelper.Logger())
+		emitter := statsdemitter.New(8088)
 		go emitter.Run(inputChan)
 
 		badMessage := &events.Envelope{
@@ -81,7 +83,8 @@ var _ = Describe("Statsdemitter", func() {
 
 		received := buffer[:readCount]
 
-		expectedBytes, _ := proto.Marshal(goodMessage)
+		expectedBytes, err := proto.Marshal(goodMessage)
+		Expect(err).NotTo(HaveOccurred())
 		Expect(received).To(Equal(expectedBytes))
 	})
 

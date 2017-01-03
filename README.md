@@ -1,4 +1,3 @@
-# DEPRECATED (moved into [cloudfoundry/loggregator](https://github.com/cloudfoundry/loggregator/))
 # statsd-injector
 Companion component to Metron that receives Statsd and emits Dropsonde to Metron
 
@@ -16,21 +15,6 @@ standalone environment.
 
 ```
 export GOPATH=$GOPATH:$WORKSPACE/loggregator
-```
-
-### Development Setup
-
-Download statsd-injector:
-```bash
-go get -v github.com/cloudfoundry/statsd-injector
-cd src/github.com/cloudfoundry/statsd-injector
-```
-
-To install exactly the dependecies vendored with statsd-injector, use [godep](https://github.com/tools/godep):
-
-```bash
-go get -v github.com/tools/godep
-godep restore ./...
 ```
 
 ## Running Tests

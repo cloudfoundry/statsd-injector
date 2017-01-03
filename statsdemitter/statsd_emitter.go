@@ -2,26 +2,25 @@ package statsdemitter
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/gosteno"
+	"log"
+	"net"
+
 	"github.com/cloudfoundry/sonde-go/events"
 	"github.com/gogo/protobuf/proto"
-	"net"
 )
 
 type StatsdEmitter struct {
-	port   uint
-	logger *gosteno.Logger
+	port uint
 }
 
-func New(port uint, logger *gosteno.Logger) *StatsdEmitter {
+func New(port uint) *StatsdEmitter {
 	return &StatsdEmitter{
-		port:   port,
-		logger: logger,
+		port: port,
 	}
 }
 
 func (s *StatsdEmitter) Run(inputChan chan *events.Envelope) {
-	conn, err := net.Dial("udp", fmt.Sprintf("localhost:%d", s.port))
+	conn, err := net.Dial("udp4", fmt.Sprintf(":%d", s.port))
 	if err != nil {
 		panic(err)
 	}
@@ -33,10 +32,12 @@ func (s *StatsdEmitter) Run(inputChan chan *events.Envelope) {
 		}
 		bytes, err := proto.Marshal(message)
 		if err != nil {
-			s.logger.Errorf("Error while marshaling envelope: %s", err.Error())
+			log.Printf("Error while marshaling envelope: %s", err)
 			continue
 		}
-		s.logger.Debug("Sending envelope to metron")
-		conn.Write(bytes)
+		_, err = conn.Write(bytes)
+		if err != nil {
+			log.Printf("Error writing to metron: %v\n", err)
+		}
 	}
 }
