@@ -4,8 +4,8 @@ import (
 	"flag"
 	"log"
 
-	"statsd-injector/statsdemitter"
-	"statsd-injector/statsdlistener"
+	"github.com/cloudfoundry/statsd-injector/statsdemitter"
+	"github.com/cloudfoundry/statsd-injector/statsdlistener"
 
 	"github.com/cloudfoundry/sonde-go/events"
 )

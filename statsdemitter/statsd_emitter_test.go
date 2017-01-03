@@ -2,7 +2,7 @@ package statsdemitter_test
 
 import (
 	"net"
-	"statsd-injector/statsdemitter"
+	"github.com/cloudfoundry/statsd-injector/statsdemitter"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -2,7 +2,7 @@ package statsdlistener_test
 
 import (
 	"net"
-	"statsd-injector/statsdlistener"
+	"github.com/cloudfoundry/statsd-injector/statsdlistener"
 	"sync"
 
 	. "github.com/onsi/ginkgo"
