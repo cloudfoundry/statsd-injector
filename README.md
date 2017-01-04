@@ -8,21 +8,35 @@ standalone environment.
 
 ### External Dependencies
 
-- Go should be installed and in the PATH
-- [etcd](https://github.com/coreos/etcd) should be installed and in the PATH
-- GOPATH should be set as described in http://golang.org/doc/code.html
-- [loggregator](https://github.com/cloudfoundry/loggregator) should be included in the GOPATH if you want to run integration tests.
+To start, you must have the latest version of Go installed and on your PATH.
 
-```
-export GOPATH=$GOPATH:$WORKSPACE/loggregator
-```
+Then, choose one of the following:
+
+#### Running from the bosh release
+
+The [statsd-injector-release repository](https://github.com/cloudfoundry/statsd-injector-release) contains a
+complete GOPATH with all of the `statsd-injector`'s dependencies frozen at known working versions.  Working
+from that repository will guarantee the best compatibility with the bosh release.
+
+To work from within the bosh release:
+
+1. Clone https://github.com/cloudfoundry/statsd-injector-release
+1. From the statsd-injector-release directory:
+  1. Run `git submodule update --init --recursive`
+  1. If you're not using `direnv`, run `source .envrc`
+
+#### Running with `go get`
+
+- Set your GOPATH, as described in http://golang.org/doc/code.html
+- Run `go get github.com/cloudfoundry/statsd-injector`
 
 ## Running Tests
 
-We are using [Ginkgo](https://github.com/onsi/ginkgo), to run tests. To run the tests execute:
+We are using [Ginkgo](https://github.com/onsi/ginkgo), to run tests. To run the tests, execute the following
+from the top level directory of this repository:
 
 ```bash
-bin/test
+ginkgo -r -race -randomizeAllSpecs
 ```
 
 ## Including statsd-injector in a bosh deployment
