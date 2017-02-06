@@ -2,30 +2,39 @@ package statsdlistener_test
 
 import (
 	"net"
-	"sync"
 
+	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
 	"github.com/cloudfoundry/statsd-injector/statsdlistener"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"github.com/cloudfoundry/sonde-go/events"
 )
 
 var _ = Describe("StatsdListener", func() {
 	Describe("Run", func() {
-		It("reads multiple gauges (on different lines) in the same packet", func() {
-			listener := statsdlistener.New("localhost:51162")
+		var (
+			envelopeChan chan *v2.Envelope
+			listener     *statsdlistener.StatsdListener
+			connection   net.Conn
+		)
 
-			envelopeChan := make(chan *events.Envelope, 100)
+		BeforeEach(func() {
+			envelopeChan = make(chan *v2.Envelope, 100)
 
-			wg := stopMeLater(func() { listener.Run(envelopeChan) })
+			var addr string
+			listener, addr = statsdlistener.Start("localhost:0", envelopeChan)
 
-			defer stopAndWait(listener.Stop, wg)
-
-			connection, err := net.Dial("udp4", "localhost:51162")
+			var err error
+			connection, err = net.Dial("udp4", addr)
 			Expect(err).ToNot(HaveOccurred())
-			defer connection.Close()
+		})
+
+		AfterEach(func() {
+			listener.Stop()
+			connection.Close()
+		})
+
+		It("reads multiple gauges (on different lines) in the same packet", func() {
 			statsdmsg := []byte("fake-origin.test.gauge:23|g\nfake-origin.other.thing:42|g\nfake-origin.sampled.gauge:17.5|g|@0.2")
 
 			f := func() int {
@@ -34,7 +43,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *events.Envelope
+			var receivedEnvelope *v2.Envelope
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.gauge", 23, "gauge")
 
@@ -46,19 +55,8 @@ var _ = Describe("StatsdListener", func() {
 		}, 5)
 
 		It("processes gauge increment/decrement stats", func() {
-			listener := statsdlistener.New("localhost:51162")
-
-			envelopeChan := make(chan *events.Envelope, 100)
-
-			wg := stopMeLater(func() { listener.Run(envelopeChan) })
-
-			defer stopAndWait(func() { listener.Stop() }, wg)
-
-			connection, err := net.Dial("udp", "localhost:51162")
-			Expect(err).ToNot(HaveOccurred())
-			defer connection.Close()
 			statsdmsg := []byte("fake-origin.test.gauge:23|g\nfake-origin.test.gauge:+7|g\nfake-origin.test.gauge:-5|g")
-			_, err = connection.Write(statsdmsg)
+			_, err := connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
 			f := func() int {
@@ -67,7 +65,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *events.Envelope
+			var receivedEnvelope *v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.gauge", 23, "gauge")
@@ -80,19 +78,8 @@ var _ = Describe("StatsdListener", func() {
 		})
 
 		It("reads multiple timings (on different lines) in the same packet", func() {
-			listener := statsdlistener.New("localhost:51162")
-
-			envelopeChan := make(chan *events.Envelope, 100)
-
-			wg := stopMeLater(func() { listener.Run(envelopeChan) })
-
-			defer stopAndWait(func() { listener.Stop() }, wg)
-
-			connection, err := net.Dial("udp", "localhost:51162")
-			Expect(err).ToNot(HaveOccurred())
-			defer connection.Close()
 			statsdmsg := []byte("fake-origin.test.timing:23|ms\nfake-origin.other.thing:420|ms\nfake-origin.sampled.timing:71|ms|@0.1")
-			_, err = connection.Write(statsdmsg)
+			_, err := connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
 			f := func() int {
@@ -101,7 +88,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *events.Envelope
+			var receivedEnvelope *v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.timing", 23, "ms")
@@ -114,19 +101,8 @@ var _ = Describe("StatsdListener", func() {
 		}, 5)
 
 		It("reads multiple counters (on different lines) in the same packet", func() {
-			listener := statsdlistener.New("localhost:51162")
-
-			envelopeChan := make(chan *events.Envelope, 100)
-
-			wg := stopMeLater(func() { listener.Run(envelopeChan) })
-
-			defer stopAndWait(func() { listener.Stop() }, wg)
-
-			connection, err := net.Dial("udp", "localhost:51162")
-			Expect(err).ToNot(HaveOccurred())
-			defer connection.Close()
 			statsdmsg := []byte("fake-origin.test.counter:23|c\nfake-origin.other.thing:420|c\nfake-origin.sampled.counter:71|c|@0.1")
-			_, err = connection.Write(statsdmsg)
+			_, err := connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
 			f := func() int {
@@ -135,7 +111,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *events.Envelope
+			var receivedEnvelope *v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.counter", 23, "counter")
@@ -148,19 +124,8 @@ var _ = Describe("StatsdListener", func() {
 		}, 5)
 
 		It("processes counter increment/decrement stats", func() {
-			listener := statsdlistener.New("localhost:51162")
-
-			envelopeChan := make(chan *events.Envelope, 100)
-
-			wg := stopMeLater(func() { listener.Run(envelopeChan) })
-
-			defer stopAndWait(func() { listener.Stop() }, wg)
-
-			connection, err := net.Dial("udp", "localhost:51162")
-			Expect(err).ToNot(HaveOccurred())
-			defer connection.Close()
 			statsdmsg := []byte("fake-origin.test.counter:23|c\nfake-origin.test.counter:+7|c\nfake-origin.test.counter:-5|c")
-			_, err = connection.Write(statsdmsg)
+			_, err := connection.Write(statsdmsg)
 			Expect(err).ToNot(HaveOccurred())
 
 			f := func() int {
@@ -169,7 +134,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *events.Envelope
+			var receivedEnvelope *v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.counter", 23, "counter")
@@ -183,30 +148,11 @@ var _ = Describe("StatsdListener", func() {
 	})
 })
 
-func stopMeLater(f func()) *sync.WaitGroup {
-	wg := sync.WaitGroup{}
+func checkValueMetric(receivedEnvelope *v2.Envelope, origin string, name string, value float64, unit string) {
+	Expect(receivedEnvelope.GetTags()["origin"].GetText()).To(Equal(origin))
 
-	wg.Add(1)
-	go func() {
-		f()
-		wg.Done()
-	}()
-
-	return &wg
-}
-
-func stopAndWait(f func(), wg *sync.WaitGroup) {
-	f()
-	wg.Wait()
-}
-
-func checkValueMetric(receivedEnvelope *events.Envelope, origin string, name string, value float64, unit string) {
-	Expect(receivedEnvelope.GetEventType()).To(Equal(events.Envelope_ValueMetric))
-	Expect(receivedEnvelope.GetOrigin()).To(Equal(origin))
-
-	vm := receivedEnvelope.GetValueMetric()
-	Expect(vm.GetName()).To(Equal(name))
-	Expect(vm.GetValue()).To(BeNumerically("==", value))
-	Expect(vm.GetUnit()).To(Equal(unit))
-
+	m, ok := receivedEnvelope.GetGauge().GetMetrics()[name]
+	Expect(ok).To(BeTrue())
+	Expect(m.GetValue()).To(Equal(value))
+	Expect(m.GetUnit()).To(Equal(unit))
 }

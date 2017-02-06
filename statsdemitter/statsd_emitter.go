@@ -1,43 +1,53 @@
 package statsdemitter
 
 import (
-	"fmt"
+	"context"
+	"io"
 	"log"
-	"net"
+	"time"
 
-	"github.com/cloudfoundry/sonde-go/events"
-	"github.com/gogo/protobuf/proto"
+	"google.golang.org/grpc"
+
+	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
 )
 
 type StatsdEmitter struct {
-	port uint
+	addr string
+	opts []grpc.DialOption
 }
 
-func New(port uint) *StatsdEmitter {
+func New(addr string, opts ...grpc.DialOption) *StatsdEmitter {
 	return &StatsdEmitter{
-		port: port,
+		addr: addr,
+		opts: opts,
 	}
 }
 
-func (s *StatsdEmitter) Run(inputChan chan *events.Envelope) {
-	conn, err := net.Dial("udp4", fmt.Sprintf(":%d", s.port))
-	if err != nil {
-		panic(err)
-	}
+func (s *StatsdEmitter) Run(inputChan chan *v2.Envelope) {
+	client, closer := startClient(s.addr, s.opts)
+	defer closer.Close()
+
 	for {
-		message, ok := <-inputChan
-		if !ok {
-			conn.Close()
-			return
-		}
-		bytes, err := proto.Marshal(message)
+		sender, err := client.Sender(context.Background())
 		if err != nil {
-			log.Printf("Error while marshaling envelope: %s", err)
+			log.Printf("Unable to establish stream to server (%s): %s", s.addr, err)
+			time.Sleep(time.Second)
 			continue
 		}
-		_, err = conn.Write(bytes)
-		if err != nil {
-			log.Printf("Error writing to metron: %v\n", err)
+
+		for message := range inputChan {
+			if err := sender.Send(message); err != nil {
+				log.Printf("Error sending message (reconnecting...): %s", err)
+				break
+			}
 		}
 	}
+}
+
+func startClient(addr string, opts []grpc.DialOption) (v2.MetronIngressClient, io.Closer) {
+	conn, err := grpc.Dial(addr, opts...)
+	if err != nil {
+		log.Fatalf("unable to establish client (%s): %s", addr, err)
+	}
+	return v2.NewMetronIngressClient(conn), conn
 }

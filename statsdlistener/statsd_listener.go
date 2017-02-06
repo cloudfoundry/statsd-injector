@@ -10,29 +10,33 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cloudfoundry/sonde-go/events"
-	"github.com/gogo/protobuf/proto"
+	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
 )
 
 type StatsdListener struct {
-	hostport string
-	stopChan chan struct{}
+	hostport   string
+	stopChan   chan struct{}
+	outputChan chan<- *v2.Envelope
 
 	gaugeValues   map[string]float64 // key is "origin.name"
 	counterValues map[string]float64 // key is "origin.name"
 }
 
-func New(hostport string) *StatsdListener {
-	return &StatsdListener{
-		hostport: hostport,
-		stopChan: make(chan struct{}),
+func Start(hostport string, outputChan chan<- *v2.Envelope) (lis *StatsdListener, actualHostport string) {
+	lis = &StatsdListener{
+		hostport:   hostport,
+		stopChan:   make(chan struct{}),
+		outputChan: outputChan,
 
 		gaugeValues:   make(map[string]float64),
 		counterValues: make(map[string]float64),
 	}
+
+	actualHostport = lis.run()
+	return lis, actualHostport
 }
 
-func (l *StatsdListener) Run(outputChan chan *events.Envelope) {
+func (l *StatsdListener) run() string {
 	udpAddr, err := net.ResolveUDPAddr("udp", l.hostport)
 	if err != nil {
 		log.Fatalf("Failed to resolve address %s. %s", l.hostport, err.Error())
@@ -53,27 +57,30 @@ func (l *StatsdListener) Run(outputChan chan *events.Envelope) {
 		connection.Close()
 	}()
 
-	for {
-		readCount, _, err := connection.ReadFrom(readBytes)
-		if err != nil {
-			log.Printf("Error while reading. %s", err)
-			return
-		}
-		trimmedBytes := make([]byte, readCount)
-		copy(trimmedBytes, readBytes[:readCount])
+	go func() {
+		for {
+			readCount, _, err := connection.ReadFrom(readBytes)
+			if err != nil {
+				log.Printf("Error while reading. %s", err)
+				return
+			}
+			trimmedBytes := make([]byte, readCount)
+			copy(trimmedBytes, readBytes[:readCount])
 
-		scanner := bufio.NewScanner(bytes.NewBuffer(trimmedBytes))
-		for scanner.Scan() {
-			line := scanner.Text()
-			envelope, err := l.parseStat(line)
-			if err == nil {
-				outputChan <- envelope
-			} else {
-				log.Printf("Error parsing stat line \"%s\": %s", line, err.Error())
+			scanner := bufio.NewScanner(bytes.NewBuffer(trimmedBytes))
+			for scanner.Scan() {
+				line := scanner.Text()
+				envelope, err := l.parseStat(line)
+				if err == nil {
+					l.outputChan <- envelope
+				} else {
+					log.Printf("Error parsing stat line \"%s\": %s", line, err.Error())
+				}
 			}
 		}
-	}
+	}()
 
+	return connection.LocalAddr().String()
 }
 
 func (l *StatsdListener) Stop() {
@@ -82,7 +89,7 @@ func (l *StatsdListener) Stop() {
 
 var statsdRegexp = regexp.MustCompile(`([^.]+)\.([^:]+):([+-]?)(\d+(\.\d+)?)\|(ms|g|c)(\|@(\d+(\.\d+)?))?`)
 
-func (l *StatsdListener) parseStat(data string) (*events.Envelope, error) {
+func (l *StatsdListener) parseStat(data string) (*v2.Envelope, error) {
 	parts := statsdRegexp.FindStringSubmatch(data)
 
 	if len(parts) == 0 {
@@ -123,15 +130,24 @@ func (l *StatsdListener) parseStat(data string) (*events.Envelope, error) {
 		value = l.gaugeValue(origin, name, value, incrementSign)
 	}
 
-	env := &events.Envelope{
-		Origin:    &origin,
-		Timestamp: proto.Int64(time.Now().UnixNano()),
-		EventType: events.Envelope_ValueMetric.Enum(),
-
-		ValueMetric: &events.ValueMetric{
-			Name:  &name,
-			Value: &value,
-			Unit:  &unit,
+	m := make(map[string]*v2.GaugeValue)
+	m[name] = &v2.GaugeValue{
+		Value: value,
+		Unit:  unit,
+	}
+	env := &v2.Envelope{
+		Timestamp: time.Now().UnixNano(),
+		Message: &v2.Envelope_Gauge{
+			Gauge: &v2.Gauge{
+				Metrics: m,
+			},
+		},
+		Tags: map[string]*v2.Value{
+			"origin": &v2.Value{
+				Data: &v2.Value_Text{
+					origin,
+				},
+			},
 		},
 	}
 

@@ -1,91 +1,95 @@
 package statsdemitter_test
 
 import (
+	"log"
 	"net"
+
+	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
 	"github.com/cloudfoundry/statsd-injector/statsdemitter"
+	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"github.com/cloudfoundry/sonde-go/events"
-	"github.com/gogo/protobuf/proto"
 )
 
 var _ = Describe("Statsdemitter", func() {
 	var (
-		udpListener *net.UDPConn
+		serverAddr string
+		mockServer *mockMetronIngressServer
+		inputChan  chan *v2.Envelope
+		message    *v2.Envelope
 	)
 
-	var _ = BeforeEach(func() {
-		udpAddr, _ := net.ResolveUDPAddr("udp", ":8088")
-		udpListener, _ = net.ListenUDP("udp", udpAddr)
-	})
-
-	var _ = AfterEach(func() {
-		udpListener.Close()
-	})
-
-	It("emits the serialized envelope on the given UDP port", func(done Done) {
-		defer close(done)
-		inputChan := make(chan *events.Envelope)
-		emitter := statsdemitter.New(8088)
-		go emitter.Run(inputChan)
-		message := &events.Envelope{
-			Origin:    proto.String("origin"),
-			Timestamp: proto.Int64(3000000000),
-			EventType: events.Envelope_CounterEvent.Enum(),
-			CounterEvent: &events.CounterEvent{
-				Name:  proto.String("counterName"),
-				Delta: proto.Uint64(3),
-				Total: proto.Uint64(15),
+	BeforeEach(func() {
+		inputChan = make(chan *v2.Envelope, 100)
+		message = &v2.Envelope{
+			Message: &v2.Envelope_Counter{
+				Counter: &v2.Counter{
+					Name: "a-name",
+					Value: &v2.Counter_Delta{
+						Delta: 48,
+					},
+				},
 			},
 		}
-
-		inputChan <- message
-
-		buffer := make([]byte, 4096)
-		readCount, _, err := udpListener.ReadFromUDP(buffer)
-		Expect(err).ToNot(HaveOccurred())
-
-		received := buffer[:readCount]
-
-		expectedBytes, err := proto.Marshal(message)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(received).To(Equal(expectedBytes))
 	})
 
-	It("does not emit invalid envelope", func(done Done) {
-		defer close(done)
-		inputChan := make(chan *events.Envelope)
-		emitter := statsdemitter.New(8088)
-		go emitter.Run(inputChan)
+	Context("when the server is already listening", func() {
+		BeforeEach(func() {
+			serverAddr, mockServer = startServer()
+			emitter := statsdemitter.New(serverAddr, grpc.WithInsecure())
 
-		badMessage := &events.Envelope{
-			Timestamp: proto.Int64(3000000000),
-			EventType: events.Envelope_CounterEvent.Enum(),
-		}
-		goodMessage := &events.Envelope{
-			Origin:    proto.String("origin"),
-			Timestamp: proto.Int64(3000000000),
-			EventType: events.Envelope_CounterEvent.Enum(),
-			CounterEvent: &events.CounterEvent{
-				Name:  proto.String("counterName"),
-				Delta: proto.Uint64(3),
-				Total: proto.Uint64(15),
-			},
-		}
+			go emitter.Run(inputChan)
+		})
 
-		inputChan <- badMessage
-		inputChan <- goodMessage
+		It("emits envelope", func() {
+			go keepWriting(inputChan, message)
+			var receiver v2.MetronIngress_SenderServer
+			Eventually(mockServer.SenderInput.Arg0).Should(Receive(&receiver))
 
-		buffer := make([]byte, 4096)
-		readCount, _, _ := udpListener.ReadFromUDP(buffer)
+			f := func() bool {
+				env, err := receiver.Recv()
+				if err != nil {
+					return false
+				}
 
-		received := buffer[:readCount]
+				return env.GetCounter().GetDelta() == 48
+			}
+			Eventually(f).Should(BeTrue())
+		})
 
-		expectedBytes, err := proto.Marshal(goodMessage)
-		Expect(err).NotTo(HaveOccurred())
-		Expect(received).To(Equal(expectedBytes))
+		It("reconnects when the stream has been closed", func() {
+			go keepWriting(inputChan, message)
+			close(mockServer.SenderOutput.Ret0)
+
+			f := func() int {
+				return len(mockServer.SenderCalled)
+			}
+			Eventually(f).Should(BeNumerically(">", 1))
+		})
 	})
-
 })
+
+func keepWriting(c chan<- *v2.Envelope, e *v2.Envelope) {
+	for {
+		c <- e
+	}
+}
+
+func startServer() (string, *mockMetronIngressServer) {
+	lis, err := net.Listen("tcp", ":0")
+	if err != nil {
+		panic(err)
+	}
+	s := grpc.NewServer()
+	mockMetronIngressServer := newMockMetronIngressServer()
+	v2.RegisterMetronIngressServer(s, mockMetronIngressServer)
+
+	go func() {
+		if err := s.Serve(lis); err != nil {
+			log.Printf("Failed to start server: %s", err)
+		}
+	}()
+
+	return lis.Addr().String(), mockMetronIngressServer
+}
