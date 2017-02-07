@@ -16,13 +16,20 @@ var _ = Describe("StatsdListener", func() {
 			envelopeChan chan *v2.Envelope
 			listener     *statsdlistener.StatsdListener
 			connection   net.Conn
+			metaData     statsdlistener.ProcessMetaData
 		)
 
 		BeforeEach(func() {
 			envelopeChan = make(chan *v2.Envelope, 100)
+			metaData = statsdlistener.ProcessMetaData{
+				Deployment: "deployment",
+				Job:        "job-name",
+				Index:      "instance-index",
+				IP:         "some-ip-addr",
+			}
 
 			var addr string
-			listener, addr = statsdlistener.Start("localhost:0", envelopeChan)
+			listener, addr = statsdlistener.Start("localhost:0", envelopeChan, metaData)
 
 			var err error
 			connection, err = net.Dial("udp4", addr)
@@ -145,12 +152,31 @@ var _ = Describe("StatsdListener", func() {
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.counter", 25, "counter")
 		})
+
+		It("adds meta-data tags", func() {
+			statsdmsg := []byte("fake-origin.test.counter:23|c\nfake-origin.test.counter:+7|c\nfake-origin.test.counter:-5|c")
+			_, err := connection.Write(statsdmsg)
+			Expect(err).ToNot(HaveOccurred())
+
+			f := func() int {
+				connection.Write(statsdmsg)
+				return len(envelopeChan)
+			}
+			Eventually(f, 3).ShouldNot(Equal(0))
+
+			var receivedEnvelope *v2.Envelope
+
+			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
+			Expect(receivedEnvelope.GetTags()["origin"].GetText()).To(Equal("fake-origin"))
+			Expect(receivedEnvelope.GetTags()["deployment"].GetText()).To(Equal(metaData.Deployment))
+			Expect(receivedEnvelope.GetTags()["job"].GetText()).To(Equal(metaData.Job))
+			Expect(receivedEnvelope.GetTags()["index"].GetText()).To(Equal(metaData.Index))
+			Expect(receivedEnvelope.GetTags()["ip"].GetText()).To(Equal(metaData.IP))
+		})
 	})
 })
 
 func checkValueMetric(receivedEnvelope *v2.Envelope, origin string, name string, value float64, unit string) {
-	Expect(receivedEnvelope.GetTags()["origin"].GetText()).To(Equal(origin))
-
 	m, ok := receivedEnvelope.GetGauge().GetMetrics()[name]
 	Expect(ok).To(BeTrue())
 	Expect(m.GetValue()).To(Equal(value))
