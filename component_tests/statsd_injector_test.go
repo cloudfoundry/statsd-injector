@@ -94,8 +94,8 @@ func startStatsdInjector(metronPort string) (statsdAddr string, cleanup func()) 
 	port := fmt.Sprint(testPort())
 
 	cmd := exec.Command(path,
-		"-statsdPort", port,
-		"-metronPort", metronPort,
+		"-statsd-port", port,
+		"-metron-port", metronPort,
 		"-ca", CAFilePath(),
 		"-cert", StatsdCertPath(),
 		"-key", StatsdKeyPath(),

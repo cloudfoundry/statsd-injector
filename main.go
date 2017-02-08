@@ -14,9 +14,8 @@ import (
 )
 
 var (
-	statsdHost = flag.String("statsdHost", "localhost", "The hostname the injector will listen on for statsd messages")
-	statsdPort = flag.Uint("statsdPort", 8125, "The UDP port the injector will listen on for statsd messages")
-	metronPort = flag.Uint("metronPort", 3458, "The GRPC port the injector will forward message to")
+	statsdPort = flag.Uint("statsd-port", 8125, "The UDP port the injector will listen on for statsd messages")
+	metronPort = flag.Uint("metron-port", 3458, "The GRPC port the injector will forward message to")
 
 	ca         = flag.String("ca", "", "File path to the CA certificate")
 	cert       = flag.String("cert", "", "File path to the client TLS cert")
@@ -35,7 +34,7 @@ func main() {
 	defer log.Print("statsd injector closing")
 
 	inputChan := make(chan *v2.Envelope)
-	hostport := fmt.Sprintf("%s:%d", *statsdHost, *statsdPort)
+	hostport := fmt.Sprintf("localhost:%d", *statsdPort)
 
 	metaData := statsdlistener.ProcessMetaData{
 		Deployment: *deploymentName,
