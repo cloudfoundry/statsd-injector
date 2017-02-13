@@ -1,4 +1,4 @@
-package component_tests
+package component_tests_test
 
 import (
 	"io/ioutil"

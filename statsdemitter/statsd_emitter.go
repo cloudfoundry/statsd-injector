@@ -44,10 +44,10 @@ func (s *StatsdEmitter) Run(inputChan chan *v2.Envelope) {
 	}
 }
 
-func startClient(addr string, opts []grpc.DialOption) (v2.MetronIngressClient, io.Closer) {
+func startClient(addr string, opts []grpc.DialOption) (v2.IngressClient, io.Closer) {
 	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
 		log.Fatalf("unable to establish client (%s): %s", addr, err)
 	}
-	return v2.NewMetronIngressClient(conn), conn
+	return v2.NewIngressClient(conn), conn
 }

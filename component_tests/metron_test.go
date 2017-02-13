@@ -1,4 +1,4 @@
-package component_tests
+package component_tests_test
 
 import (
 	"net"
@@ -9,10 +9,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
-
-type MetronIngressServer interface {
-	v2.MetronIngressServer
-}
 
 type MetronServer struct {
 	port     int
@@ -40,7 +36,7 @@ func NewMetronServer() (*MetronServer, error) {
 	}
 
 	s := grpc.NewServer(grpc.Creds(transportCreds))
-	v2.RegisterMetronIngressServer(s, mockMetron)
+	v2.RegisterIngressServer(s, mockMetron)
 
 	go s.Serve(lis)
 

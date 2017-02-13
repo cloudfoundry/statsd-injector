@@ -44,7 +44,7 @@ var _ = Describe("Statsdemitter", func() {
 
 		It("emits envelope", func() {
 			go keepWriting(inputChan, message)
-			var receiver v2.MetronIngress_SenderServer
+			var receiver v2.Ingress_SenderServer
 			Eventually(mockServer.SenderInput.Arg0).Should(Receive(&receiver))
 
 			f := func() bool {
@@ -83,7 +83,7 @@ func startServer() (string, *mockMetronIngressServer) {
 	}
 	s := grpc.NewServer()
 	mockMetronIngressServer := newMockMetronIngressServer()
-	v2.RegisterMetronIngressServer(s, mockMetronIngressServer)
+	v2.RegisterIngressServer(s, mockMetronIngressServer)
 
 	go func() {
 		if err := s.Serve(lis); err != nil {

@@ -1,4 +1,4 @@
-package component_tests
+package component_tests_test
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ var _ = Describe("StatsdInjector", func() {
 			}
 		}()
 
-		var receiver v2.MetronIngress_SenderServer
+		var receiver v2.Ingress_SenderServer
 		Eventually(consumerServer.Metron.SenderInput.Arg0).Should(Receive(&receiver))
 
 		f := func() bool {

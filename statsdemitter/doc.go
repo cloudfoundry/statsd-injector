@@ -7,5 +7,5 @@ import (
 )
 
 type MetronIngressServer interface {
-	v2.MetronIngressServer
+	v2.IngressServer
 }
