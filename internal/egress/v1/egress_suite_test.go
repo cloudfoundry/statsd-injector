@@ -12,5 +12,5 @@ import (
 func TestStatsdemitter(t *testing.T) {
 	log.SetOutput(GinkgoWriter)
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Egress Suite")
+	RunSpecs(t, "Egress V1 Suite")
 }

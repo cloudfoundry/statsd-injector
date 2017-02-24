@@ -11,7 +11,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
-var _ = Describe("Statsdemitter", func() {
+var _ = Describe("StatsdEmitter", func() {
 	var (
 		udpListener *net.UDPConn
 	)

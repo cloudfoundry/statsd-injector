@@ -12,5 +12,5 @@ import (
 func TestStatsdlistener(t *testing.T) {
 	log.SetOutput(GinkgoWriter)
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Statsdlistener Suite")
+	RunSpecs(t, "Ingress v1 Suite")
 }
