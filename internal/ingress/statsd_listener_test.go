@@ -1,10 +1,10 @@
-package statsdlistener_test
+package ingress_test
 
 import (
 	"net"
 
+	"github.com/cloudfoundry/statsd-injector/internal/ingress"
 	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
-	"github.com/cloudfoundry/statsd-injector/statsdlistener"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,14 +14,14 @@ var _ = Describe("StatsdListener", func() {
 	Describe("Run", func() {
 		var (
 			envelopeChan chan *v2.Envelope
-			listener     *statsdlistener.StatsdListener
+			listener     *ingress.StatsdListener
 			connection   net.Conn
-			metaData     statsdlistener.ProcessMetaData
+			metaData     ingress.ProcessMetaData
 		)
 
 		BeforeEach(func() {
 			envelopeChan = make(chan *v2.Envelope, 100)
-			metaData = statsdlistener.ProcessMetaData{
+			metaData = ingress.ProcessMetaData{
 				Deployment: "deployment",
 				Job:        "job-name",
 				Index:      "instance-index",
@@ -29,7 +29,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 
 			var addr string
-			listener, addr = statsdlistener.Start("localhost:0", envelopeChan, metaData)
+			listener, addr = ingress.Start("localhost:0", envelopeChan, metaData)
 
 			var err error
 			connection, err = net.Dial("udp4", addr)

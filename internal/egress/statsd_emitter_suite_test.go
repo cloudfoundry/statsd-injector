@@ -1,4 +1,4 @@
-package statsdlistener_test
+package egress_test
 
 import (
 	"log"
@@ -9,8 +9,8 @@ import (
 	"testing"
 )
 
-func TestStatsdlistener(t *testing.T) {
+func TestStatsdemitter(t *testing.T) {
 	log.SetOutput(GinkgoWriter)
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Statsdlistener Suite")
+	RunSpecs(t, "Egress Suite")
 }

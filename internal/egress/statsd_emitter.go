@@ -1,4 +1,4 @@
-package statsdemitter
+package egress
 
 import (
 	"context"

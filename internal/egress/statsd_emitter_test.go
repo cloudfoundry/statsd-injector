@@ -1,11 +1,11 @@
-package statsdemitter_test
+package egress_test
 
 import (
 	"log"
 	"net"
 
+	"github.com/cloudfoundry/statsd-injector/internal/egress"
 	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
-	"github.com/cloudfoundry/statsd-injector/statsdemitter"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
@@ -37,7 +37,7 @@ var _ = Describe("Statsdemitter", func() {
 	Context("when the server is already listening", func() {
 		BeforeEach(func() {
 			serverAddr, mockServer = startServer()
-			emitter := statsdemitter.New(serverAddr, grpc.WithInsecure())
+			emitter := egress.New(serverAddr, grpc.WithInsecure())
 
 			go emitter.Run(inputChan)
 		})

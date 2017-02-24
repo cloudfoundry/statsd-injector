@@ -1,4 +1,4 @@
-package statsdlistener
+package ingress
 
 import (
 	"bufio"

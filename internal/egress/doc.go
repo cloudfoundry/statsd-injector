@@ -1,4 +1,4 @@
-package statsdemitter
+package egress
 
 //go:generate hel
 
