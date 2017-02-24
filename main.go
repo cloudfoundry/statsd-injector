@@ -9,6 +9,7 @@ import (
 const defaultAPIVersion = "v1"
 
 func main() {
+	statsdHost := flag.String("statsdHost", "localhost", "The hostname the injector will listen on for statsd messages")
 	statsdPort := flag.Uint("statsd-port", 8125, "The UDP port the injector will listen on for statsd messages")
 	apiVersion := flag.String("metron-api", defaultAPIVersion, "API version of Metron to which to send envelopes")
 	metronPort := flag.Uint("metron-port", 3458, "The GRPC port the injector will forward message to")
@@ -24,6 +25,7 @@ func main() {
 	flag.Parse()
 
 	injector := app.NewInjector(app.Config{
+		StatsdHost:     *statsdHost,
 		StatsdPort:     *statsdPort,
 		APIVersion:     *apiVersion,
 		MetronPort:     *metronPort,

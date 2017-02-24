@@ -6,9 +6,8 @@ import (
 	"log"
 	"time"
 
-	"google.golang.org/grpc"
-
 	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	"google.golang.org/grpc"
 )
 
 type StatsdEmitter struct {
