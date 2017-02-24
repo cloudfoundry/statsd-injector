@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 )
 
 type ProcessMetaData struct {

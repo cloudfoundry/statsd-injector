@@ -5,7 +5,7 @@ import (
 	"net"
 
 	egress "github.com/cloudfoundry/statsd-injector/internal/egress/v2"
-	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"

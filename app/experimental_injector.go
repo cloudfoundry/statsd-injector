@@ -6,8 +6,8 @@ import (
 
 	egress "github.com/cloudfoundry/statsd-injector/internal/egress/v2"
 	ingress "github.com/cloudfoundry/statsd-injector/internal/ingress/v2"
-	"github.com/cloudfoundry/statsd-injector/plumbing"
-	"github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	"github.com/cloudfoundry/statsd-injector/internal/plumbing"
+	"github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc"
 )
 

@@ -8,7 +8,7 @@ package component_tests_test
 import (
 	"context"
 
-	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc/metadata"
 )
 

@@ -4,7 +4,7 @@ import (
 	"net"
 
 	ingress "github.com/cloudfoundry/statsd-injector/internal/ingress/v2"
-	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

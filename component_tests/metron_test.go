@@ -3,8 +3,8 @@ package component_tests_test
 import (
 	"net"
 
-	"github.com/cloudfoundry/statsd-injector/plumbing"
-	v2 "github.com/cloudfoundry/statsd-injector/plumbing/v2"
+	"github.com/cloudfoundry/statsd-injector/internal/plumbing"
+	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
