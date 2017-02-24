@@ -9,5 +9,5 @@ import (
 
 func TestStatsdGoClient(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Statsd Go Client Suite")
+	RunSpecs(t, "Go Client Suite")
 }
