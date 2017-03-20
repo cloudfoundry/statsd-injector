@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/cloudfoundry/statsd-injector/app"
+	"github.com/cloudfoundry/statsd-injector/profiler"
 )
 
 const defaultAPIVersion = "v1"
@@ -22,6 +23,9 @@ func main() {
 	ipAddr := flag.String("ip", "", "IP address of host machine (envelope tag)")
 	instanceIndex := flag.String("instance-index", "", "index of job instance")
 	flag.Parse()
+
+	p := profiler.New(0)
+	go p.Start()
 
 	injector := app.NewInjector(app.Config{
 		StatsdHost:     *statsdHost,
