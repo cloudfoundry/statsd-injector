@@ -65,22 +65,6 @@ var _ = Describe("StatsdInjector", func() {
 				return false
 			}
 
-			if e.GetTags()["deployment"].GetText() != "my-deployment" {
-				return false
-			}
-
-			if e.GetTags()["job"].GetText() != "my-job" {
-				return false
-			}
-
-			if e.GetTags()["ip"].GetText() != "my-ip" {
-				return false
-			}
-
-			if e.GetTags()["index"].GetText() != "my-index" {
-				return false
-			}
-
 			return e.GetGauge().GetMetrics()["test.counter"].GetValue() == 23
 		}
 		Eventually(f).Should(BeTrue())
@@ -99,10 +83,6 @@ func startStatsdInjector(metronPort string) (statsdAddr string, cleanup func()) 
 		"-ca", CAFilePath(),
 		"-cert", StatsdCertPath(),
 		"-key", StatsdKeyPath(),
-		"-deployment-name", "my-deployment",
-		"-job-name", "my-job",
-		"-ip", "my-ip",
-		"-instance-index", "my-index",
 	)
 	cmd.Stdout = GinkgoWriter
 	cmd.Stderr = GinkgoWriter

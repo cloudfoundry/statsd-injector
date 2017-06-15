@@ -13,29 +13,20 @@ import (
 	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 )
 
-type ProcessMetaData struct {
-	Deployment string
-	Job        string
-	Index      string
-	IP         string
-}
-
 type StatsdListener struct {
 	hostport   string
 	stopChan   chan struct{}
 	outputChan chan<- *v2.Envelope
-	metaData   ProcessMetaData
 
 	gaugeValues   map[string]float64 // key is "origin.name"
 	counterValues map[string]float64 // key is "origin.name"
 }
 
-func Start(hostport string, outputChan chan<- *v2.Envelope, m ProcessMetaData) (lis *StatsdListener, actualHostport string) {
+func Start(hostport string, outputChan chan<- *v2.Envelope) (lis *StatsdListener, actualHostport string) {
 	lis = &StatsdListener{
 		hostport:   hostport,
 		stopChan:   make(chan struct{}),
 		outputChan: outputChan,
-		metaData:   m,
 
 		gaugeValues:   make(map[string]float64),
 		counterValues: make(map[string]float64),
@@ -140,11 +131,7 @@ func (l *StatsdListener) parseStat(data string) (*v2.Envelope, error) {
 	}
 
 	tags := map[string]*v2.Value{
-		"origin":     &v2.Value{Data: &v2.Value_Text{origin}},
-		"deployment": &v2.Value{Data: &v2.Value_Text{l.metaData.Deployment}},
-		"job":        &v2.Value{Data: &v2.Value_Text{l.metaData.Job}},
-		"index":      &v2.Value{Data: &v2.Value_Text{l.metaData.Index}},
-		"ip":         &v2.Value{Data: &v2.Value_Text{l.metaData.IP}},
+		"origin": &v2.Value{Data: &v2.Value_Text{origin}},
 	}
 
 	m := make(map[string]*v2.GaugeValue)

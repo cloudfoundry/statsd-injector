@@ -19,11 +19,6 @@ type Config struct {
 	CA   string
 	Cert string
 	Key  string
-
-	DeploymentName string
-	JobName        string
-	IPAddr         string
-	InstanceIndex  string
 }
 
 type Injector struct {
@@ -34,24 +29,15 @@ type Injector struct {
 	ca   string
 	cert string
 	key  string
-
-	deploymentName string
-	jobName        string
-	ipAddr         string
-	instanceIndex  string
 }
 
 func NewInjector(c Config) *Injector {
 	return &Injector{
-		statsdPort:     c.StatsdPort,
-		metronPort:     c.MetronPort,
-		ca:             c.CA,
-		cert:           c.Cert,
-		key:            c.Key,
-		deploymentName: c.DeploymentName,
-		jobName:        c.JobName,
-		ipAddr:         c.IPAddr,
-		instanceIndex:  c.InstanceIndex,
+		statsdPort: c.StatsdPort,
+		metronPort: c.MetronPort,
+		ca:         c.CA,
+		cert:       c.Cert,
+		key:        c.Key,
 	}
 }
 
@@ -59,13 +45,7 @@ func (i *Injector) Start() {
 	inputChan := make(chan *loggregator.Envelope)
 	hostport := fmt.Sprintf("localhost:%d", i.statsdPort)
 
-	metaData := ingress.ProcessMetaData{
-		Deployment: i.deploymentName,
-		Job:        i.jobName,
-		Index:      i.instanceIndex,
-		IP:         i.ipAddr,
-	}
-	_, addr := ingress.Start(hostport, inputChan, metaData)
+	_, addr := ingress.Start(hostport, inputChan)
 
 	log.Printf("Started statsd-injector listener at %s", addr)
 

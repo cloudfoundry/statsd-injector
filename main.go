@@ -18,26 +18,18 @@ func main() {
 	cert := flag.String("cert", "", "File path to the client TLS cert")
 	privateKey := flag.String("key", "", "File path to the client TLS private key")
 
-	deploymentName := flag.String("deployment-name", "", "Deployment name (envelope tag)")
-	jobName := flag.String("job-name", "", "Job name (envelope tag)")
-	ipAddr := flag.String("ip", "", "IP address of host machine (envelope tag)")
-	instanceIndex := flag.String("instance-index", "", "index of job instance")
 	flag.Parse()
 
 	p := profiler.New(0)
 	go p.Start()
 
 	injector := app.NewInjector(app.Config{
-		StatsdHost:     *statsdHost,
-		StatsdPort:     *statsdPort,
-		MetronPort:     *metronPort,
-		CA:             *ca,
-		Cert:           *cert,
-		Key:            *privateKey,
-		DeploymentName: *deploymentName,
-		JobName:        *jobName,
-		IPAddr:         *ipAddr,
-		InstanceIndex:  *instanceIndex,
+		StatsdHost: *statsdHost,
+		StatsdPort: *statsdPort,
+		MetronPort: *metronPort,
+		CA:         *ca,
+		Cert:       *cert,
+		Key:        *privateKey,
 	})
 	injector.Start()
 }

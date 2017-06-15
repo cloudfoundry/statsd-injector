@@ -16,20 +16,13 @@ var _ = Describe("StatsdListener", func() {
 			envelopeChan chan *v2.Envelope
 			listener     *ingress.StatsdListener
 			connection   net.Conn
-			metaData     ingress.ProcessMetaData
 		)
 
 		BeforeEach(func() {
 			envelopeChan = make(chan *v2.Envelope, 100)
-			metaData = ingress.ProcessMetaData{
-				Deployment: "deployment",
-				Job:        "job-name",
-				Index:      "instance-index",
-				IP:         "some-ip-addr",
-			}
 
 			var addr string
-			listener, addr = ingress.Start("localhost:0", envelopeChan, metaData)
+			listener, addr = ingress.Start("localhost:0", envelopeChan)
 
 			var err error
 			connection, err = net.Dial("udp4", addr)
@@ -168,10 +161,6 @@ var _ = Describe("StatsdListener", func() {
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			Expect(receivedEnvelope.GetTags()["origin"].GetText()).To(Equal("fake-origin"))
-			Expect(receivedEnvelope.GetTags()["deployment"].GetText()).To(Equal(metaData.Deployment))
-			Expect(receivedEnvelope.GetTags()["job"].GetText()).To(Equal(metaData.Job))
-			Expect(receivedEnvelope.GetTags()["index"].GetText()).To(Equal(metaData.Index))
-			Expect(receivedEnvelope.GetTags()["ip"].GetText()).To(Equal(metaData.IP))
 		})
 	})
 })
