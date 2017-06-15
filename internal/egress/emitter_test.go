@@ -4,7 +4,7 @@ import (
 	"log"
 	"net"
 
-	egress "github.com/cloudfoundry/statsd-injector/internal/egress/v2"
+	"github.com/cloudfoundry/statsd-injector/internal/egress"
 	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc"
 

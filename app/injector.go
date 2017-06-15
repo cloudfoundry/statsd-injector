@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	egress "github.com/cloudfoundry/statsd-injector/internal/egress/v2"
-	ingress "github.com/cloudfoundry/statsd-injector/internal/ingress/v2"
+	"github.com/cloudfoundry/statsd-injector/internal/egress"
+	"github.com/cloudfoundry/statsd-injector/internal/ingress"
 	"github.com/cloudfoundry/statsd-injector/internal/plumbing"
 	loggregator "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc"
