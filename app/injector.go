@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"log"
 
+	loggregator "code.cloudfoundry.org/go-loggregator"
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 	"github.com/cloudfoundry/statsd-injector/internal/egress"
 	"github.com/cloudfoundry/statsd-injector/internal/ingress"
-	"github.com/cloudfoundry/statsd-injector/internal/plumbing"
-	loggregator "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 type Config struct {
@@ -42,19 +43,19 @@ func NewInjector(c Config) *Injector {
 }
 
 func (i *Injector) Start() {
-	inputChan := make(chan *loggregator.Envelope)
+	inputChan := make(chan *loggregator_v2.Envelope)
 	hostport := fmt.Sprintf("localhost:%d", i.statsdPort)
 
 	_, addr := ingress.Start(hostport, inputChan)
 
 	log.Printf("Started statsd-injector listener at %s", addr)
 
-	credentials := plumbing.NewCredentials(i.cert, i.key, i.ca, "metron")
-	if credentials == nil {
+	config, err := loggregator.NewIngressTLSConfig(i.ca, i.cert, i.key)
+	if err != nil {
 		log.Fatal("Invalid TLS credentials")
 	}
 	statsdEmitter := egress.New(fmt.Sprintf("localhost:%d", i.metronPort),
-		grpc.WithTransportCredentials(credentials),
+		grpc.WithTransportCredentials(credentials.NewTLS(config)),
 	)
 	statsdEmitter.Run(inputChan)
 }

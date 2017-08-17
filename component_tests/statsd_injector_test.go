@@ -7,9 +7,9 @@ import (
 	"os/exec"
 	"time"
 
-	"google.golang.org/grpc/grpclog"
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
+	"google.golang.org/grpc/grpclog"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -52,7 +52,7 @@ var _ = Describe("StatsdInjector", func() {
 			}
 		}()
 
-		var receiver v2.Ingress_SenderServer
+		var receiver loggregator_v2.Ingress_SenderServer
 		Eventually(consumerServer.Metron.SenderInput.Arg0).Should(Receive(&receiver))
 
 		f := func() bool {
@@ -61,7 +61,7 @@ var _ = Describe("StatsdInjector", func() {
 				return false
 			}
 
-			if e.GetTags()["origin"].GetText() != "fake-origin" {
+			if e.GetTags()["origin"] != "fake-origin" {
 				return false
 			}
 

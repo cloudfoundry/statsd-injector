@@ -10,19 +10,19 @@ import (
 	"strconv"
 	"time"
 
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 )
 
 type StatsdListener struct {
 	hostport   string
 	stopChan   chan struct{}
-	outputChan chan<- *v2.Envelope
+	outputChan chan<- *loggregator_v2.Envelope
 
 	gaugeValues   map[string]float64 // key is "origin.name"
 	counterValues map[string]float64 // key is "origin.name"
 }
 
-func Start(hostport string, outputChan chan<- *v2.Envelope) (lis *StatsdListener, actualHostport string) {
+func Start(hostport string, outputChan chan<- *loggregator_v2.Envelope) (lis *StatsdListener, actualHostport string) {
 	lis = &StatsdListener{
 		hostport:   hostport,
 		stopChan:   make(chan struct{}),
@@ -89,7 +89,7 @@ func (l *StatsdListener) Stop() {
 
 var statsdRegexp = regexp.MustCompile(`([^.]+)\.([^:]+):([+-]?)(\d+(\.\d+)?)\|(ms|g|c)(\|@(\d+(\.\d+)?))?`)
 
-func (l *StatsdListener) parseStat(data string) (*v2.Envelope, error) {
+func (l *StatsdListener) parseStat(data string) (*loggregator_v2.Envelope, error) {
 	parts := statsdRegexp.FindStringSubmatch(data)
 
 	if len(parts) == 0 {
@@ -130,19 +130,19 @@ func (l *StatsdListener) parseStat(data string) (*v2.Envelope, error) {
 		value = l.gaugeValue(origin, name, value, incrementSign)
 	}
 
-	tags := map[string]*v2.Value{
-		"origin": &v2.Value{Data: &v2.Value_Text{origin}},
+	tags := map[string]string{
+		"origin": origin,
 	}
 
-	m := make(map[string]*v2.GaugeValue)
-	m[name] = &v2.GaugeValue{
+	m := make(map[string]*loggregator_v2.GaugeValue)
+	m[name] = &loggregator_v2.GaugeValue{
 		Value: value,
 		Unit:  unit,
 	}
-	env := &v2.Envelope{
+	env := &loggregator_v2.Envelope{
 		Timestamp: time.Now().UnixNano(),
-		Message: &v2.Envelope_Gauge{
-			Gauge: &v2.Gauge{
+		Message: &loggregator_v2.Envelope_Gauge{
+			Gauge: &loggregator_v2.Gauge{
 				Metrics: m,
 			},
 		},

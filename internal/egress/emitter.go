@@ -6,7 +6,8 @@ import (
 	"log"
 	"time"
 
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
+
 	"google.golang.org/grpc"
 )
 
@@ -22,7 +23,7 @@ func New(addr string, opts ...grpc.DialOption) *StatsdEmitter {
 	}
 }
 
-func (s *StatsdEmitter) Run(inputChan chan *v2.Envelope) {
+func (s *StatsdEmitter) Run(inputChan chan *loggregator_v2.Envelope) {
 	client, closer := startClient(s.addr, s.opts)
 	defer closer.Close()
 
@@ -43,10 +44,10 @@ func (s *StatsdEmitter) Run(inputChan chan *v2.Envelope) {
 	}
 }
 
-func startClient(addr string, opts []grpc.DialOption) (v2.IngressClient, io.Closer) {
+func startClient(addr string, opts []grpc.DialOption) (loggregator_v2.IngressClient, io.Closer) {
 	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
 		log.Fatalf("unable to establish client (%s): %s", addr, err)
 	}
-	return v2.NewIngressClient(conn), conn
+	return loggregator_v2.NewIngressClient(conn), conn
 }

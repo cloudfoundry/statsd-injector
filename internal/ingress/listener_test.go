@@ -3,8 +3,9 @@ package ingress_test
 import (
 	"net"
 
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
+
 	"github.com/cloudfoundry/statsd-injector/internal/ingress"
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,13 +14,13 @@ import (
 var _ = Describe("StatsdListener", func() {
 	Describe("Run", func() {
 		var (
-			envelopeChan chan *v2.Envelope
+			envelopeChan chan *loggregator_v2.Envelope
 			listener     *ingress.StatsdListener
 			connection   net.Conn
 		)
 
 		BeforeEach(func() {
-			envelopeChan = make(chan *v2.Envelope, 100)
+			envelopeChan = make(chan *loggregator_v2.Envelope, 100)
 
 			var addr string
 			listener, addr = ingress.Start("localhost:0", envelopeChan)
@@ -43,7 +44,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *v2.Envelope
+			var receivedEnvelope *loggregator_v2.Envelope
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.gauge", 23, "gauge")
 
@@ -65,7 +66,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *v2.Envelope
+			var receivedEnvelope *loggregator_v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.gauge", 23, "gauge")
@@ -88,7 +89,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *v2.Envelope
+			var receivedEnvelope *loggregator_v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.timing", 23, "ms")
@@ -111,7 +112,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *v2.Envelope
+			var receivedEnvelope *loggregator_v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.counter", 23, "counter")
@@ -134,7 +135,7 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *v2.Envelope
+			var receivedEnvelope *loggregator_v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			checkValueMetric(receivedEnvelope, "fake-origin", "test.counter", 23, "counter")
@@ -157,15 +158,15 @@ var _ = Describe("StatsdListener", func() {
 			}
 			Eventually(f, 3).ShouldNot(Equal(0))
 
-			var receivedEnvelope *v2.Envelope
+			var receivedEnvelope *loggregator_v2.Envelope
 
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
-			Expect(receivedEnvelope.GetTags()["origin"].GetText()).To(Equal("fake-origin"))
+			Expect(receivedEnvelope.GetTags()["origin"]).To(Equal("fake-origin"))
 		})
 	})
 })
 
-func checkValueMetric(receivedEnvelope *v2.Envelope, origin string, name string, value float64, unit string) {
+func checkValueMetric(receivedEnvelope *loggregator_v2.Envelope, origin string, name string, value float64, unit string) {
 	m, ok := receivedEnvelope.GetGauge().GetMetrics()[name]
 	Expect(ok).To(BeTrue())
 	Expect(m.GetValue()).To(Equal(value))

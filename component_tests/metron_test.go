@@ -3,8 +3,8 @@ package component_tests_test
 import (
 	"net"
 
-	"github.com/cloudfoundry/statsd-injector/internal/plumbing"
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
+	loggregator "code.cloudfoundry.org/go-loggregator"
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -18,11 +18,10 @@ type MetronServer struct {
 }
 
 func NewMetronServer() (*MetronServer, error) {
-	tlsConfig, err := plumbing.NewMutualTLSConfig(
+	tlsConfig, err := loggregator.NewIngressTLSConfig(
+		CAFilePath(),
 		MetronCertPath(),
 		MetronKeyPath(),
-		CAFilePath(),
-		"metron",
 	)
 	if err != nil {
 		return nil, err
@@ -36,7 +35,7 @@ func NewMetronServer() (*MetronServer, error) {
 	}
 
 	s := grpc.NewServer(grpc.Creds(transportCreds))
-	v2.RegisterIngressServer(s, mockMetron)
+	loggregator_v2.RegisterIngressServer(s, mockMetron)
 
 	go s.Serve(lis)
 

@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 	"github.com/cloudfoundry/statsd-injector/internal/egress"
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
 	"google.golang.org/grpc"
 
 	. "github.com/onsi/ginkgo"
@@ -16,17 +16,17 @@ var _ = Describe("Statsdemitter", func() {
 	var (
 		serverAddr string
 		mockServer *mockMetronIngressServer
-		inputChan  chan *v2.Envelope
-		message    *v2.Envelope
+		inputChan  chan *loggregator_v2.Envelope
+		message    *loggregator_v2.Envelope
 	)
 
 	BeforeEach(func() {
-		inputChan = make(chan *v2.Envelope, 100)
-		message = &v2.Envelope{
-			Message: &v2.Envelope_Counter{
-				Counter: &v2.Counter{
+		inputChan = make(chan *loggregator_v2.Envelope, 100)
+		message = &loggregator_v2.Envelope{
+			Message: &loggregator_v2.Envelope_Counter{
+				Counter: &loggregator_v2.Counter{
 					Name: "a-name",
-					Value: &v2.Counter_Delta{
+					Value: &loggregator_v2.Counter_Delta{
 						Delta: 48,
 					},
 				},
@@ -44,7 +44,7 @@ var _ = Describe("Statsdemitter", func() {
 
 		It("emits envelope", func() {
 			go keepWriting(inputChan, message)
-			var receiver v2.Ingress_SenderServer
+			var receiver loggregator_v2.Ingress_SenderServer
 			Eventually(mockServer.SenderInput.Arg0).Should(Receive(&receiver))
 
 			f := func() bool {
@@ -70,7 +70,7 @@ var _ = Describe("Statsdemitter", func() {
 	})
 })
 
-func keepWriting(c chan<- *v2.Envelope, e *v2.Envelope) {
+func keepWriting(c chan<- *loggregator_v2.Envelope, e *loggregator_v2.Envelope) {
 	for {
 		c <- e
 	}
@@ -83,7 +83,7 @@ func startServer() (string, *mockMetronIngressServer) {
 	}
 	s := grpc.NewServer()
 	mockMetronIngressServer := newMockMetronIngressServer()
-	v2.RegisterIngressServer(s, mockMetronIngressServer)
+	loggregator_v2.RegisterIngressServer(s, mockMetronIngressServer)
 
 	go func() {
 		if err := s.Serve(lis); err != nil {

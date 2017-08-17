@@ -1,10 +1,8 @@
 //go:generate hel
 package component_tests
 
-import (
-	v2 "github.com/cloudfoundry/statsd-injector/internal/plumbing/v2"
-)
+import "code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 
 type MetronIngressServer interface {
-	v2.IngressServer
+	loggregator_v2.IngressServer
 }
