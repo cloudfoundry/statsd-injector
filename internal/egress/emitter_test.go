@@ -25,10 +25,8 @@ var _ = Describe("Statsdemitter", func() {
 		message = &loggregator_v2.Envelope{
 			Message: &loggregator_v2.Envelope_Counter{
 				Counter: &loggregator_v2.Counter{
-					Name: "a-name",
-					Value: &loggregator_v2.Counter_Delta{
-						Delta: 48,
-					},
+					Name:  "a-name",
+					Delta: 48,
 				},
 			},
 		}
