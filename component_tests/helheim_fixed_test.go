@@ -6,9 +6,8 @@
 package component_tests_test
 
 import (
-	"context"
-
 	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc/metadata"
 )
 
@@ -43,6 +42,9 @@ func (m *mockMetronIngressServer) Sender(arg0 loggregator_v2.Ingress_SenderServe
 	m.SenderCalled <- true
 	m.SenderInput.Arg0 <- arg0
 	return <-m.SenderOutput.Ret0
+}
+func (m *mockMetronIngressServer) Send(context.Context, *loggregator_v2.EnvelopeBatch) (*loggregator_v2.SendResponse, error) {
+	return nil, nil
 }
 func (m *mockMetronIngressServer) BatchSender(arg0 loggregator_v2.Ingress_BatchSenderServer) error {
 	m.BatchSenderCalled <- true

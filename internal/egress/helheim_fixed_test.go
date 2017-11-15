@@ -6,7 +6,7 @@
 package egress_test
 
 import (
-	"context"
+	"golang.org/x/net/context"
 
 	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
 	"google.golang.org/grpc/metadata"
@@ -27,6 +27,15 @@ type mockMetronIngressServer struct {
 	BatchSenderOutput struct {
 		Ret0 chan error
 	}
+	SendCalled chan bool
+	SendInput  struct {
+		Arg0 chan context.Context
+		Arg1 chan *loggregator_v2.EnvelopeBatch
+	}
+	SendOutput struct {
+		Ret0 chan *loggregator_v2.SendResponse
+		Ret1 chan error
+	}
 }
 
 func newMockMetronIngressServer() *mockMetronIngressServer {
@@ -37,6 +46,11 @@ func newMockMetronIngressServer() *mockMetronIngressServer {
 	m.BatchSenderCalled = make(chan bool, 100)
 	m.BatchSenderInput.Arg0 = make(chan loggregator_v2.Ingress_BatchSenderServer, 100)
 	m.BatchSenderOutput.Ret0 = make(chan error, 100)
+	m.SendCalled = make(chan bool, 100)
+	m.SendInput.Arg0 = make(chan context.Context, 100)
+	m.SendInput.Arg1 = make(chan *loggregator_v2.EnvelopeBatch, 100)
+	m.SendOutput.Ret0 = make(chan *loggregator_v2.SendResponse, 100)
+	m.SendOutput.Ret1 = make(chan error, 100)
 	return m
 }
 func (m *mockMetronIngressServer) Sender(arg0 loggregator_v2.Ingress_SenderServer) error {
@@ -48,6 +62,12 @@ func (m *mockMetronIngressServer) BatchSender(arg0 loggregator_v2.Ingress_BatchS
 	m.BatchSenderCalled <- true
 	m.BatchSenderInput.Arg0 <- arg0
 	return <-m.BatchSenderOutput.Ret0
+}
+func (m *mockMetronIngressServer) Send(arg0 context.Context, arg1 *loggregator_v2.EnvelopeBatch) (*loggregator_v2.SendResponse, error) {
+	m.SendCalled <- true
+	m.SendInput.Arg0 <- arg0
+	m.SendInput.Arg1 <- arg1
+	return <-m.SendOutput.Ret0, <-m.SendOutput.Ret1
 }
 
 type mockIngress_SenderServer struct {
