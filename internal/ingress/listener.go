@@ -140,6 +140,7 @@ func (l *StatsdListener) parseStat(data string) (*loggregator_v2.Envelope, error
 		Unit:  unit,
 	}
 	env := &loggregator_v2.Envelope{
+		SourceId:  origin,
 		Timestamp: time.Now().UnixNano(),
 		Message: &loggregator_v2.Envelope_Gauge{
 			Gauge: &loggregator_v2.Gauge{

@@ -167,6 +167,7 @@ var _ = Describe("StatsdListener", func() {
 })
 
 func checkValueMetric(receivedEnvelope *loggregator_v2.Envelope, origin string, name string, value float64, unit string) {
+	Expect(receivedEnvelope.GetSourceId()).To(Equal(origin))
 	m, ok := receivedEnvelope.GetGauge().GetMetrics()[name]
 	Expect(ok).To(BeTrue())
 	Expect(m.GetValue()).To(Equal(value))
