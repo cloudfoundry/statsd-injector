@@ -163,6 +163,24 @@ var _ = Describe("StatsdListener", func() {
 			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
 			Expect(receivedEnvelope.GetTags()["origin"]).To(Equal("fake-origin"))
 		})
+
+		It("supports Datadog-style tags", func() {
+			statsdmsg := []byte("fake-origin.test.counter:-5|c|#testtag1:testvalue1,testtag2:testvalue2")
+			_, err := connection.Write(statsdmsg)
+			Expect(err).ToNot(HaveOccurred())
+
+			f := func() int {
+				connection.Write(statsdmsg)
+				return len(envelopeChan)
+			}
+			Eventually(f, 3).ShouldNot(Equal(0))
+
+			var receivedEnvelope *loggregator_v2.Envelope
+
+			Eventually(envelopeChan).Should(Receive(&receivedEnvelope))
+			Expect(receivedEnvelope.GetTags()["testtag1"]).To(Equal("testvalue1"))
+			Expect(receivedEnvelope.GetTags()["testtag2"]).To(Equal("testvalue2"))
+		})
 	})
 })
 

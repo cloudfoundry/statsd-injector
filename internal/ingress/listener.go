@@ -8,6 +8,7 @@ import (
 	"net"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
@@ -87,7 +88,7 @@ func (l *StatsdListener) Stop() {
 	close(l.stopChan)
 }
 
-var statsdRegexp = regexp.MustCompile(`([^.]+)\.([^:]+):([+-]?)(\d+(\.\d+)?)\|(ms|g|c)(\|@(\d+(\.\d+)?))?`)
+var statsdRegexp = regexp.MustCompile(`([^.]+)\.([^:]+):([+-]?)(\d+(\.\d+)?)\|(ms|g|c)(\|@(\d+(\.\d+)?))?(\|#([\w:,]*))?`)
 
 func (l *StatsdListener) parseStat(data string) (*loggregator_v2.Envelope, error) {
 	parts := statsdRegexp.FindStringSubmatch(data)
@@ -106,6 +107,8 @@ func (l *StatsdListener) parseStat(data string) (*loggregator_v2.Envelope, error
 	// parts[7] is the full sampling substring
 	sampleRateString := parts[8]
 	// parts[9] is decimal part of sampleRate
+	// parts[10] is the tag section
+	tagString := parts[11]
 
 	value, _ := strconv.ParseFloat(valueString, 64)
 
@@ -132,6 +135,14 @@ func (l *StatsdListener) parseStat(data string) (*loggregator_v2.Envelope, error
 
 	tags := map[string]string{
 		"origin": origin,
+	}
+
+	if len(tagString) > 0 {
+		tagPairs := strings.Split(tagString, ",")
+		for _, pair := range tagPairs {
+			kv := strings.Split(pair, ":")
+			tags[kv[0]] = kv[1]
+		}
 	}
 
 	m := make(map[string]*loggregator_v2.GaugeValue)
