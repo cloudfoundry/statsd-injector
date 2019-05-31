@@ -1,4 +1,7 @@
-# statsd-injector
+# (Deprecated) statsd-injector
+
+Use https://github.com/cloudfoundry/statsd-injector-release
+
 Companion component to Metron that receives Statsd and emits Dropsonde to Metron
 
 ## Getting started
